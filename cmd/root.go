@@ -82,6 +82,7 @@ func init() {
 		devCommand(),
 		testnetsCmd(),
 		getVersionCmd(),
+		keepAliveCmd(),
 	)
 
 	// This is a bit of a cheat :shushing_face:
