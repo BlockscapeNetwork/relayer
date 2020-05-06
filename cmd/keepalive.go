@@ -59,7 +59,7 @@ func keepAliveCmd() *cobra.Command {
 			})
 			prometheus.MustRegister(unrelayedSeq)
 
-			repeatedlyCheckUnrelayed(path, 60, unrelayedSeq)
+			go repeatedlyCheckUnrelayed(path, 60, unrelayedSeq)
 
 			scriptHealth := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
@@ -135,6 +135,7 @@ func runUpdateAtInterval(interval int, srcChainID, dstChainID, clientID string, 
 }
 
 func repeatedlyCheckChannel(srcChainID, srcChannelID, srcPortID, dstChainID, dstChannelID, dstPortID string, interval int, chanHealth prometheus.Gauge) {
+	log.Println("Start monitoring of channel health.")
 	for {
 		err := checkChannel(srcChainID, srcChannelID, srcPortID, dstChainID, dstChannelID, dstPortID)
 		if err != nil {
@@ -194,6 +195,7 @@ func queryChan(chainID, channelID, portID string) (chanTypes.ChannelResponse, er
 }
 
 func repeatedlyCheckUnrelayed(path *relayer.Path, interval int, unrelayedSeq prometheus.Gauge) {
+	log.Println("Start monitoring of unrelayed sequences")
 	for {
 		unrelayedSeq.Set(float64(checkUnrelayedSequences(path)))
 		time.Sleep(time.Duration(interval) * time.Second)
