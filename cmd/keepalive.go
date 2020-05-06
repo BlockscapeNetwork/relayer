@@ -46,8 +46,8 @@ func keepAliveCmd() *cobra.Command {
 				return err
 			}
 
-			srcChainID, srcChannelID, srcPort, srcClientID := path.Src.ChainID, path.Src.ChannelID, path.Src.PortID, path.Src.ClientID
-			dstChainID, dstChannelID, dstPort, dstClientID := path.Dst.ChainID, path.Dst.ChannelID, path.Dst.PortID, path.Dst.ClientID
+			srcChainID /* srcChannelID, srcPort, */, srcClientID := path.Src.ChainID /* path.Src.ChannelID, path.Src.PortID, */, path.Src.ClientID
+			dstChainID /* dstChannelID, dstPort, */, dstClientID := path.Dst.ChainID /* path.Dst.ChannelID, path.Dst.PortID, */, path.Dst.ClientID
 
 			unrelayedSeq := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
@@ -102,7 +102,7 @@ func keepAliveCmd() *cobra.Command {
 			})
 			prometheus.MustRegister(chanHealth)
 
-			go repeatedlyCheckChannel(srcChainID, srcChannelID, srcPort, dstChainID, dstChannelID, dstPort, 10, chanHealth)
+			// go repeatedlyCheckChannel(srcChainID, srcChannelID, srcPort, dstChainID, dstChannelID, dstPort, 10, chanHealth)
 
 			http.Handle("/metrics", promhttp.Handler())
 			return http.ListenAndServe("0.0.0.0:20202", nil)
