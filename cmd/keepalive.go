@@ -36,10 +36,10 @@ func keepAliveCmd() *cobra.Command {
 
 	var interval int
 	cmd := &cobra.Command{
-		Use:   "keepAlive [path] [client-id]",
+		Use:   "keepAlive [path] [src-client-id] [dst-client-id]",
 		Short: "Keep channel alive",
 		Long:  strings.TrimSpace(`Regularily sends client updates to keep channel alive. Client ID is the same as the one used for 'raw update-client'`),
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, err := config.Paths.Get(args[0])
 			if err != nil {
@@ -49,7 +49,8 @@ func keepAliveCmd() *cobra.Command {
 			srcChainID, srcChannelID, srcPort := path.Src.ChainID, path.Src.ChannelID, path.Src.PortID
 			dstChainID, dstChannelID, dstPort := path.Dst.ChainID, path.Dst.ChannelID, path.Dst.PortID
 
-			clientID := args[1]
+			srcClientID := args[1]
+			dstClientID := args[2]
 
 			unrelayedSeq := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
@@ -61,23 +62,40 @@ func keepAliveCmd() *cobra.Command {
 
 			go repeatedlyCheckUnrelayed(path, 60, unrelayedSeq)
 
-			scriptHealth := prometheus.NewGauge(prometheus.GaugeOpts{
+			scriptHealthSRC := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
 				Subsystem: "relayer",
-				Name:      "script_health",
+				Name:      "script_health_src",
 				Help:      "0.0 if script is not running successfully, else 1.0",
 			})
-			prometheus.MustRegister(scriptHealth)
+			prometheus.MustRegister(scriptHealthSRC)
 
-			lastUpdate := prometheus.NewGauge(prometheus.GaugeOpts{
+			lastUpdateSRC := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
 				Subsystem: "relayer",
-				Name:      "last_update",
+				Name:      "last_update_src",
 				Help:      "unix timestamp in seconds of when the last update was executed",
 			})
-			prometheus.MustRegister(lastUpdate)
+			prometheus.MustRegister(lastUpdateSRC)
 
-			go keepAlive(interval, srcChainID, dstChainID, clientID, scriptHealth, lastUpdate)
+			scriptHealthDST := prometheus.NewGauge(prometheus.GaugeOpts{
+				Namespace: "GoZ",
+				Subsystem: "relayer",
+				Name:      "script_health_dst",
+				Help:      "0.0 if script is not running successfully, else 1.0",
+			})
+			prometheus.MustRegister(scriptHealthDST)
+
+			lastUpdateDST := prometheus.NewGauge(prometheus.GaugeOpts{
+				Namespace: "GoZ",
+				Subsystem: "relayer",
+				Name:      "last_update_dst",
+				Help:      "unix timestamp in seconds of when the last update was executed",
+			})
+			prometheus.MustRegister(lastUpdateDST)
+
+			go keepAlive(interval, srcChainID, dstChainID, srcClientID, scriptHealthSRC, lastUpdateSRC)
+			go keepAlive(interval, dstChainID, srcChainID, dstClientID, scriptHealthDST, lastUpdateDST)
 
 			chanHealth := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
@@ -99,7 +117,7 @@ func keepAliveCmd() *cobra.Command {
 }
 
 // keepAlive runs a loop sending a client_update tx every [interval] seconds
-func keepAlive(interval int, srcChainID, dstChainID, clientID string, scriptHealth, lastUpdate prometheus.Gauge) { // TODO add cahnnel for last update time
+func keepAlive(interval int, srcChainID, dstChainID, clientID string, scriptHealth, lastUpdate prometheus.Gauge) {
 	for {
 		err := runUpdateAtInterval(interval, srcChainID, dstChainID, clientID, scriptHealth, lastUpdate)
 		log.Println("Error on update:", err)
@@ -115,7 +133,7 @@ func runUpdateAtInterval(interval int, srcChainID, dstChainID, clientID string, 
 	defer t.Stop()
 	defer scriptHealth.Set(0.0) // set to unhealthy when funciton returns, because this only happens on error
 
-	log.Println("Updating Clients")
+	log.Println("Updating Client", clientID)
 	if err := ucc.RunE(nil, args); err != nil {
 		return err
 	}
