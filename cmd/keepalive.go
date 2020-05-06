@@ -165,7 +165,7 @@ func checkChanState(chainID, channelID, portID string) error {
 	if err != nil {
 		return err
 	}
-	s := res.Channel.Channel.GetState()
+	s := res.Channel.State
 	if s != exported.OPEN {
 		return fmt.Errorf("Expected src channel state to be %s but was %s", exported.OPEN, s)
 	}
