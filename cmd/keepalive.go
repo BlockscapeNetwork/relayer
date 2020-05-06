@@ -36,21 +36,18 @@ func keepAliveCmd() *cobra.Command {
 
 	var interval int
 	cmd := &cobra.Command{
-		Use:   "keepAlive [path] [src-client-id] [dst-client-id]",
+		Use:   "keepAlive [path]",
 		Short: "Keep channel alive",
 		Long:  strings.TrimSpace(`Regularily sends client updates to keep channel alive. Client ID is the same as the one used for 'raw update-client'`),
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			path, err := config.Paths.Get(args[0])
 			if err != nil {
 				return err
 			}
 
-			srcChainID, srcChannelID, srcPort := path.Src.ChainID, path.Src.ChannelID, path.Src.PortID
-			dstChainID, dstChannelID, dstPort := path.Dst.ChainID, path.Dst.ChannelID, path.Dst.PortID
-
-			srcClientID := args[1]
-			dstClientID := args[2]
+			srcChainID, srcChannelID, srcPort, srcClientID := path.Src.ChainID, path.Src.ChannelID, path.Src.PortID, path.Src.ClientID
+			dstChainID, dstChannelID, dstPort, dstClientID := path.Dst.ChainID, path.Dst.ChannelID, path.Dst.PortID, path.Dst.ClientID
 
 			unrelayedSeq := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
