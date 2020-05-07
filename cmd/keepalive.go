@@ -43,8 +43,8 @@ func keepAliveCmd() *cobra.Command {
 				return err
 			}
 
-			srcChainID /* srcChannelID, srcPort, */, srcClientID := path.Src.ChainID /* path.Src.ChannelID, path.Src.PortID, */, path.Src.ClientID
-			dstChainID /* dstChannelID, dstPort, */, dstClientID := path.Dst.ChainID /* path.Dst.ChannelID, path.Dst.PortID, */, path.Dst.ClientID
+			srcChainID, srcClientID := path.Src.ChainID, path.Src.ClientID
+			dstChainID, dstClientID := path.Dst.ChainID, path.Dst.ClientID
 
 			unrelayedSeq := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
