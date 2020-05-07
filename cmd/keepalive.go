@@ -2,14 +2,11 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/x/ibc/04-channel/exported"
-	chanTypes "github.com/cosmos/cosmos-sdk/x/ibc/04-channel/types"
 	"github.com/iqlusioninc/relayer/relayer"
 
 	"github.com/spf13/cobra"
@@ -102,8 +99,6 @@ func keepAliveCmd() *cobra.Command {
 			})
 			prometheus.MustRegister(chanHealth)
 
-			// go repeatedlyCheckChannel(srcChainID, srcChannelID, srcPort, dstChainID, dstChannelID, dstPort, 10, chanHealth)
-
 			http.Handle("/metrics", promhttp.Handler())
 			return http.ListenAndServe("0.0.0.0:20202", nil)
 		},
@@ -147,66 +142,6 @@ func runUpdateAtInterval(interval int, srcChainID, dstChainID, clientID string, 
 	}
 
 	return errors.New("This shouldn't happen, this function should only return an update error")
-}
-
-func repeatedlyCheckChannel(srcChainID, srcChannelID, srcPortID, dstChainID, dstChannelID, dstPortID string, interval int, chanHealth prometheus.Gauge) {
-	log.Println("Start monitoring of channel health.")
-	for {
-		err := checkChannel(srcChainID, srcChannelID, srcPortID, dstChainID, dstChannelID, dstPortID)
-		if err != nil {
-			log.Println("Wrong channel state:", err)
-			chanHealth.Set(0.0)
-		} else {
-			chanHealth.Set(1.0)
-		}
-		time.Sleep(time.Duration(interval) * time.Second)
-	}
-}
-
-func checkChannel(srcChainID, srcChannelID, srcPortID, dstChainID, dstChannelID, dstPortID string) error {
-	if err := checkChanState(srcChainID, srcChannelID, srcPortID); err != nil {
-		return err
-	}
-
-	if err := checkChanState(dstChainID, dstChannelID, dstPortID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// returns nil if channel is open, else error
-func checkChanState(chainID, channelID, portID string) error {
-	res, err := queryChan(chainID, channelID, portID)
-	if err != nil {
-		return err
-	}
-	s := res.Channel.State
-	if s != exported.OPEN {
-		return fmt.Errorf("Expected src channel state to be %s but was %s", exported.OPEN, s)
-	}
-	return nil
-}
-
-// copy of queryChannel which returns the response instead of printing it
-func queryChan(chainID, channelID, portID string) (chanTypes.ChannelResponse, error) {
-	emptyRes := chanTypes.ChannelResponse{}
-
-	chain, err := config.Chains.Get(chainID)
-	if err != nil {
-		return emptyRes, err
-	}
-
-	if err = chain.AddPath(dcli, dcon, channelID, portID, dord); err != nil {
-		return emptyRes, err
-	}
-
-	height, err := chain.QueryLatestHeight()
-	if err != nil {
-		return emptyRes, err
-	}
-
-	return chain.QueryChannel(height)
 }
 
 func repeatedlyCheckUnrelayed(path *relayer.Path, interval int, unrelayedSeq prometheus.Gauge) {
