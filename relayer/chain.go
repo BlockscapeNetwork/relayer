@@ -3,6 +3,7 @@ package relayer
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -422,6 +423,10 @@ func (src *Chain) SendAndPrint(txs []sdk.Msg, text, indent bool) (err error) {
 	res, err := src.SendMsgs(txs)
 	if err != nil {
 		return err
+	}
+
+	if res.Height == 0 {
+		return errors.New("Heigth 0, pls check timestamperror, gas and trusting period")
 	}
 
 	return src.Print(res, text, indent)
