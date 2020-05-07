@@ -111,7 +111,7 @@ func keepAliveCmd() *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(&interval, "interval", "i", 5390, "interval to run update-client at")
-	cmd.Flags().IntVarP(&delay, "delay", "d", 0, "Time to wait before running the update for the first time")
+	cmd.Flags().IntVar(&delay, "delay", 0, "Time to wait before running the update for the first time")
 	return cmd
 }
 
