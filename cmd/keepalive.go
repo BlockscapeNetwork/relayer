@@ -91,14 +91,6 @@ func keepAliveCmd() *cobra.Command {
 			go keepAlive(interval, srcChainID, dstChainID, srcClientID, scriptHealthSRC, lastUpdateSRC)
 			go keepAlive(interval, dstChainID, srcChainID, dstClientID, scriptHealthDST, lastUpdateDST)
 
-			chanHealth := prometheus.NewGauge(prometheus.GaugeOpts{
-				Namespace: "GoZ",
-				Subsystem: "relayer",
-				Name:      "channel_open",
-				Help:      "1.0 if channel open in both directions, else 0.0",
-			})
-			prometheus.MustRegister(chanHealth)
-
 			http.Handle("/metrics", promhttp.Handler())
 			return http.ListenAndServe("0.0.0.0:20202", nil)
 		},

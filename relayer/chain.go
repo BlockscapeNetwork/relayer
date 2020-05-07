@@ -424,6 +424,10 @@ func (src *Chain) SendAndPrint(txs []sdk.Msg, text, indent bool) (err error) {
 		return err
 	}
 
+	if res.Height == 0 {
+		return err
+	}
+
 	return src.Print(res, text, indent)
 
 }
