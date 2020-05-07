@@ -35,6 +35,7 @@ unrelayed_sequences: number of unrelayed sequences or negative if error occured 
 func keepAliveCmd() *cobra.Command {
 
 	var interval int
+	var delay int
 	cmd := &cobra.Command{
 		Use:   "keepAlive [path]",
 		Short: "Keep channel alive",
@@ -91,8 +92,8 @@ func keepAliveCmd() *cobra.Command {
 			})
 			prometheus.MustRegister(lastUpdateDST)
 
-			go keepAlive(interval, srcChainID, dstChainID, srcClientID, scriptHealthSRC, lastUpdateSRC)
-			go keepAlive(interval, dstChainID, srcChainID, dstClientID, scriptHealthDST, lastUpdateDST)
+			go keepAlive(delay, interval, srcChainID, dstChainID, srcClientID, scriptHealthSRC, lastUpdateSRC)
+			go keepAlive(delay, interval, dstChainID, srcChainID, dstClientID, scriptHealthDST, lastUpdateDST)
 
 			chanHealth := prometheus.NewGauge(prometheus.GaugeOpts{
 				Namespace: "GoZ",
@@ -110,11 +111,16 @@ func keepAliveCmd() *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(&interval, "interval", "i", 5390, "interval to run update-client at")
+	cmd.Flags().IntVar(&delay, "delay", 0, "Time to wait before running the update for the first time")
 	return cmd
 }
 
 // keepAlive runs a loop sending a client_update tx every [interval] seconds
-func keepAlive(interval int, srcChainID, dstChainID, clientID string, scriptHealth, lastUpdate prometheus.Gauge) {
+func keepAlive(delay, interval int, srcChainID, dstChainID, clientID string, scriptHealth, lastUpdate prometheus.Gauge) {
+	if delay > 0 {
+		log.Printf("Waiting for %d seconds before getting first update for client %s\n", delay, clientID)
+		time.Sleep(time.Duration(delay) * time.Second)
+	}
 	for {
 		err := runUpdateAtInterval(interval, srcChainID, dstChainID, clientID, scriptHealth, lastUpdate)
 		log.Println("Error on update:", err)
