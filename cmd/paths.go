@@ -491,21 +491,13 @@ func pathsShowCmd() *cobra.Command {
 
 			srcConn, err := ch[src].QueryConnection(srch)
 			dstConn, _ := ch[dst].QueryConnection(dsth)
-<<<<<<< HEAD
-			if err == nil && srcConn.Connection.State.String() == "OPEN" && dstConn.Connection.State.String() == "OPEN" {
-=======
 			if err == nil && srcConn.Connection.State == ibcTypes.OPEN && dstConn.Connection.State == ibcTypes.OPEN {
->>>>>>> goz-phase-1
 				connection = true
 			}
 
 			srcChan, err := ch[src].QueryChannel(srch)
 			dstChan, _ := ch[dst].QueryChannel(dsth)
-<<<<<<< HEAD
-			if err == nil && srcChan.Channel.State.String() == "OPEN" && dstChan.Channel.State.String() == "OPEN" {
-=======
 			if err == nil && srcChan.Channel.State == ibcTypes.OPEN && dstChan.Channel.State == ibcTypes.OPEN {
->>>>>>> goz-phase-1
 				channel = true
 			}
 
