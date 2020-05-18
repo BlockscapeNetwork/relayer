@@ -44,7 +44,7 @@ func keepAliveCmd() *cobra.Command {
 				return err
 			}
 
-			srcChainID, srcClientID := path.Src.ChainID, path.Src.ClientID
+			srcChainID := path.Src.ChainID
 			dstChainID, dstClientID := path.Dst.ChainID, path.Dst.ClientID
 
 			unrelayedSeq := prometheus.NewGauge(prometheus.GaugeOpts{
@@ -89,7 +89,7 @@ func keepAliveCmd() *cobra.Command {
 			})
 			prometheus.MustRegister(lastUpdateDST)
 
-			go keepAlive(delay, interval, srcChainID, dstChainID, srcClientID, scriptHealthSRC, lastUpdateSRC)
+			//go keepAlive(delay, interval, srcChainID, dstChainID, srcClientID, scriptHealthSRC, lastUpdateSRC)
 			go keepAlive(delay, interval, dstChainID, srcChainID, dstClientID, scriptHealthDST, lastUpdateDST)
 
 			http.Handle("/metrics", promhttp.Handler())
