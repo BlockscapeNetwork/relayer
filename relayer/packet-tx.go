@@ -52,7 +52,7 @@ func (src *Chain) SendTransferBothSides(dst *Chain, amount sdk.Coin, dstAddr sdk
 		Src: []sdk.Msg{src.PathEnd.MsgTransfer(
 			dst.PathEnd, dstHeader.GetHeight(), sdk.NewCoins(sdk.Coin{
 				Denom:  amount.Denom,
-				Amount: sdk.NewInt(0)}), dstAddrString, src.MustGetAddress(),
+				Amount: sdk.NewInt(1)}), dstAddrString, src.MustGetAddress(),
 		)},
 		Dst: []sdk.Msg{},
 	}
