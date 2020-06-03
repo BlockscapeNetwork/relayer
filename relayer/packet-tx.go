@@ -110,9 +110,7 @@ func (src *Chain) SendTransferBothSides(dst *Chain, amount sdk.Coin, dstAddr sdk
 
 	// reconstructing packet data here instead of retrieving from an indexed node
 	xferPacket := src.PathEnd.XferPacket(
-		sdk.NewCoins(sdk.Coin{
-			Denom:  amount.Denom,
-			Amount: sdk.NewInt(0)}),
+		sdk.NewCoins(amount),
 		srcAddrString,
 		dstAddrString,
 	)
