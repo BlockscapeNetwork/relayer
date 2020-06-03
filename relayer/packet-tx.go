@@ -47,12 +47,10 @@ func (src *Chain) SendTransferBothSides(dst *Chain, amount sdk.Coin, dstAddr sdk
 	dstAddrString := dstAddr.String()
 	done()
 
-	fraudulentCoin := sdk.Coins{}
-
 	// MsgTransfer will call SendPacket on src chain
 	txs := RelayMsgs{
 		Src: []sdk.Msg{src.PathEnd.MsgTransfer(
-			dst.PathEnd, dstHeader.GetHeight(), fraudulentCoin, dstAddrString, src.MustGetAddress(),
+			dst.PathEnd, dstHeader.GetHeight(), sdk.NewCoins(amount), dstAddrString, src.MustGetAddress(),
 		)},
 		Dst: []sdk.Msg{},
 	}
